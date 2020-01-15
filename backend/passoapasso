@@ -1,0 +1,153 @@
+criar pasta do app
+criar pasta com nome backend
+dentro dela da yarn init -y
+code . para abrir o json
+instalar bibliotecas
+no terminal do vs code  yarn add express (serve pra facilitar as rotas)
+criar o index.js na raiz
+dentro do index
+const express = require('express');...etc
+yarn add nodemon -D (para observar alterações no codigo)
+dentro do json inserir script:
+"scripts": {
+    "dev": "nodemon src/index.js"
+  },
+  para ser só preciso o comando yarn dev ao invés de node index.js
+abre outro terminal do lado
+
+instalar o insomnia para não utilizar o navegador para vizualizar o localhost:3333(pq o app.listen(3333))
+ir para mongo MongoDB atlas para usar o banco de dados no sql
+1 starter cluster na criação
+2 database acesss pra criar o usuario e senha
+3 network acess "allow acess to anywere"
+4 terminando a instalação -> connect -> connect your aplication -> nodejs/3.0 or later
+
+yarn add mongoose
+faz a importação dele com 'const mongoose = require('mongoose');' 
+depois da criação do app mongoose.connect(link do connect trocando o user caso n tenha vindo o nome certo e a senha
+e o nome do banco de dados caso queira que vem por padrão como test);
+como darão erros coloca-se outros 2 parâmetros dos warnings para resolve-los ficando após a url.
+"mongoose.connect('mongodb+srv://Roberto:robert0@cluster0-ly6uz.mongodb.net/test?retryWrites=true&w=majority', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})"
+criar a pasta src e mover o index para lá
+com isso mudar no json para src/index.js o caminho do atalho do script e reinicia o servidor com "yarn dev" (ctrl+c para fechar)
+modificar as rotas do index para um novo arquivo routes.js dentro da src e mandar para lá o : app.post() ou app.get()
+ficando lá assim:
+[
+
+const {Router} = require('express');
+const routes = Router();
+// sendo assim troca o app por routes ficando
+
+routes.post('/devs', (request, response) => {
+  console.log(request.body);
+  return response.json({ message: 'Hello Omnistack' });
+});
+
+module.exports = routes;
+]
+
+ainda dentro de routes é preciso exportar essas rotas assim sendo coloca-se ao final 'module.exports = routes;'
+
+e agora importar essas configurações no index que vai utilizar ela agora
+colocando: const routes = require('./routes')
+module.exports = routes;
+dentro da pasta src cria-se uma pasta models(representações de entidades do app)
+nessa pasta cria-se o Dev.js
+no Dev importa o mongoose novamente para ele saber os parâmetros do dev com: const mongoose = require('mongoose');
+[dentro do Dev]
+[const mongoose = require('mongoose');
+const DevSchema = new mongoose.Schema({
+  name: String,
+  github_username: String,
+  bio: String,
+  avatar_url: String,
+  techs: [String],
+
+});
+
+module.exports = mongoose.model('Dev', DevSchema);]
+
+criar rota para cadastrar os devs 
+dentro do insomnia mudar o nome para cadastrar dev e mudar a url para devs
+no json inserir apenas o github_username para com ele pegar os dados direto do github 
+
+nisso retira-se o console.log na routes e coloca-se 
+  const {github_username} = request.body;
+
+instala a biblioteca axios com yarn add axios que faz chamadas para outras apis(no caso a do github)
+
+dentro da routes importa a axios com const axios = require('axios');
+
+no routes.post ensere:
+  const apiResponse = axios.get(`https://api.github.com/users/${github_username}`) //com crases para inserir variaveis como template strings
+e antes da função da rota uma flag com nome async e antes de axios um await ficando await axios.get(...)
+e manda um   console.log(apiResponse.data);
+
+desestruturar para pegar apenas as informações necessárias colocando 
+const {name = login, avatar_url, bio } =  apiResponse.data;
+e pegar um novo console.log para verificar se deu tudo certo com console.log(name, avatar_url, github_username, bio);
+
+de volta ao json do insomnia pegar as tecnologias do dev com "techs": "bla bla bla" e colocar no request.body techs tbm
+
+como estamos inserindo uma string e queremos um array de string para o techs criamos a função:
+const techsArray = techs.split(',').map(tech => tech.trim()); // pegar cada frase até a virgula e com o map retirar os espaços antes e depois com o trim.
+importar para cadastrar os devs com "const Dev = require(./models/Dev);"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------
+const express = require('express');
+const mongoose = require('mongoose');
+
+const app = express();
+
+app.use(express.json());
+
+mongoose.connect('mongodb+srv://Roberto:robert0@cluster0-ly6uz.mongodb.net/test?retryWrites=true&w=majority', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+
+// métodos http: get, post, put, delete
+
+// Tipos de parâmetros
+
+// Query Params: (90% em get) request.query (Filtros, ordenação, paginação, ...)
+// Route Params: (put delete) request.params (identificar um recurso na alteração ou remoção)
+// Body: (post e put) request.body (Dados para criação ou alteração de um registro)
+
+
+// app.put('/users', (request, response) => {
+//   console.log(request.query);
+  
+// return response.json({ message: 'Olá mundo'});
+// })
+// app.delete('/users/:id', (request, response) => {
+//   console.log(request.params);
+  
+// return response.json({ message: 'Olá mundo'});
+// })
+
+
+// MongoDB (Não-relacional)
+app.post('/users', (request, response) => {
+  console.log(request.body);
+  
+return response.json({ message: 'Olá mundo'});
+})
+app.listen(3333);
